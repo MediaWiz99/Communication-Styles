@@ -821,6 +821,9 @@
                 subtitle: "Direct and Respectful",
                 isIdeal: true,
                 description: "Assertive communication is the healthiest and most effective style. You express your thoughts, feelings, and needs directly while respecting others. You stand up for yourself without violating others' rights. This creates clear communication, mutual respect, and strong relationships.",
+                profileSummary: "You communicate with clarity and confidence while maintaining respect for others. You advocate for yourself effectively without diminishing others.",
+                communicationApproach: "You express thoughts directly, listen actively, and use 'I' statements to own your perspective while acknowledging others' viewpoints.",
+                workplaceImpact: "Your communication builds trust, reduces misunderstandings, creates psychological safety, and enables productive conflict resolution.",
                 characteristics: ["Clear and direct", "Respectful of others", "Confident body language", "Active listener", "Uses 'I' statements", "Solutions-focused"],
                 impact: {
                     positive: [
@@ -838,7 +841,11 @@
                     "Maintain confident body language",
                     "Seek first to understand, then to be understood",
                     "Stay calm under pressure"
-                ]
+                ],
+                swotStrength: "Clear, respectful communication that builds trust and resolves conflicts effectively",
+                swotWeakness: "May occasionally need to adapt approach for highly emotional or sensitive situations",
+                swotOpportunity: "Model and coach others in assertive communication to elevate team effectiveness",
+                swotThreat: "Could be misperceived as aggressive in cultures or contexts that value indirect communication"
             },
             aggressive: {
                 name: "Aggressive",
@@ -847,6 +854,9 @@
                 subtitle: "Direct but Disrespectful",
                 isIdeal: false,
                 description: "Aggressive communication involves expressing yourself in ways that violate others' rights. While you get your point across, you do so through intimidation, blame, or attack. This wins battles but loses wars—damaging relationships and creating resentment.",
+                profileSummary: "You communicate forcefully and directly, but often at the expense of others' dignity and psychological safety. This approach gets short-term results but creates long-term relationship damage.",
+                communicationApproach: "You dominate conversations, interrupt others, use 'you' statements that blame, and may intimidate or dismiss others to get your way.",
+                workplaceImpact: "While you may achieve compliance, you damage trust, reduce honest feedback, increase turnover, and create a fear-based environment.",
                 characteristics: ["Dominating", "Intimidating", "Blaming others", "Interrupting", "Loud or forceful", "Dismissive"],
                 impact: {
                     positive: [],
@@ -864,7 +874,11 @@
                     "Replace 'you' statements with 'I' statements",
                     "Practice active listening without interrupting",
                     "Seek to understand others' perspectives"
-                ]
+                ],
+                swotStrength: "Directness and willingness to speak up—can be channeled positively with skill development",
+                swotWeakness: "Communication style damages relationships, trust, and team psychological safety",
+                swotOpportunity: "Develop emotional regulation and assertive (vs. aggressive) communication techniques",
+                swotThreat: "Risk of derailing career through damaged relationships and hostile work environment issues"
             },
             passive: {
                 name: "Passive",
@@ -873,6 +887,9 @@
                 subtitle: "Indirect, Avoids Conflict",
                 isIdeal: false,
                 description: "Passive communication involves failing to express your thoughts, feelings, and needs. You prioritize others' needs over your own to avoid conflict. While you may seem agreeable, this leads to unmet needs, resentment, and being overlooked or taken advantage of.",
+                profileSummary: "You prioritize harmony and avoid conflict, but at the cost of your own needs and authentic voice. Others may not know what you truly think or need.",
+                communicationApproach: "You defer to others, avoid stating opinions, apologize excessively, and say 'yes' when you mean 'no' to avoid conflict or disapproval.",
+                workplaceImpact: "Your needs go unmet, you may be overlooked for opportunities, resentment builds internally, and others cannot rely on your authentic input.",
                 characteristics: ["Avoids conflict", "Difficulty saying no", "Apologizes excessively", "Quiet or withdrawn", "Allows others to decide", "Self-deprecating"],
                 impact: {
                     positive: [],
@@ -890,7 +907,11 @@
                     "Start sharing opinions in low-stakes situations",
                     "Use 'I think' and 'I feel' to own your perspective",
                     "Recognize that your needs matter too"
-                ]
+                ],
+                swotStrength: "Consideration for others and conflict avoidance—foundation for diplomatic communication",
+                swotWeakness: "Fails to advocate for self or share important perspectives; builds internal resentment",
+                swotOpportunity: "Develop assertive skills to express needs while maintaining relationship focus",
+                swotThreat: "Risk of burnout, being overlooked, and building unexpressed resentment"
             },
             passiveAggressive: {
                 name: "Passive-Aggressive",
@@ -899,6 +920,9 @@
                 subtitle: "Indirect and Resentful",
                 isIdeal: false,
                 description: "Passive-aggressive communication appears passive on the surface but expresses hostility indirectly. Instead of directly addressing issues, you use sarcasm, sabotage, or silent treatment. This creates confusion, erodes trust, and prevents genuine resolution.",
+                profileSummary: "You express frustration indirectly through sarcasm, procrastination, or subtle sabotage rather than addressing issues directly. This creates confusion and erodes trust.",
+                communicationApproach: "You appear to agree while actually resisting, use sarcasm to express frustration, give silent treatment, and express dissatisfaction to others rather than the source.",
+                workplaceImpact: "Your communication creates confusion, damages psychological safety, prevents real problem-solving, and can create toxic team dynamics when patterns are recognized.",
                 characteristics: ["Sarcastic", "Uses silent treatment", "Procrastinates intentionally", "Gossips or complains to others", "Gives backhanded compliments", "Says yes, does no"],
                 impact: {
                     positive: [],
@@ -916,7 +940,11 @@
                     "Address issues directly when they arise",
                     "Say what you mean and mean what you say",
                     "Practice direct, honest feedback"
-                ]
+                ],
+                swotStrength: "Awareness of frustrations and concerns—energy that can be redirected to direct communication",
+                swotWeakness: "Indirect expression of hostility creates confusion and prevents genuine resolution",
+                swotOpportunity: "Develop self-awareness about frustration triggers and skills for direct expression",
+                swotThreat: "Risk of reputation damage and relationship erosion as patterns become recognized"
             }
         };
 
@@ -1024,6 +1052,25 @@
             // Calculate assertiveness ratio
             const assertiveRatio = ((scores.assertive / maxScore) * 100).toFixed(0);
             const healthyComm = scores.assertive >= 35;
+            
+            // Calculate style clarity and directness/respect dimensions
+            const totalScore = scores.assertive + scores.aggressive + scores.passive + scores.passiveAggressive;
+            const primaryPct = Math.round((sortedStyles[0][1] / totalScore) * 100);
+            const styleClarity = primaryPct >= 35 ? 'Strong' : primaryPct >= 28 ? 'Moderate' : 'Balanced';
+            
+            // Directness: Assertive + Aggressive vs Passive + Passive-Aggressive
+            const directnessScore = scores.assertive + scores.aggressive;
+            const indirectnessScore = scores.passive + scores.passiveAggressive;
+            const directnessOrientation = directnessScore > indirectnessScore ? 'Direct' : 'Indirect';
+            
+            // Respect: Assertive + Passive vs Aggressive + Passive-Aggressive  
+            const respectScore = scores.assertive + scores.passive;
+            const disrespectScore = scores.aggressive + scores.passiveAggressive;
+            const respectOrientation = respectScore > disrespectScore ? 'Respectful' : 'Challenging';
+            
+            // Generate tracker code
+            const styleAbbrev = { assertive: 'As', aggressive: 'Ag', passive: 'Pa', passiveAggressive: 'PA' };
+            const trackerCode = `CSA-${styleAbbrev[primaryStyle]}${styleAbbrev[secondaryStyle]}-${styleClarity.charAt(0)}`;
 
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = `
@@ -1057,6 +1104,55 @@
                         <h3>Passive-Aggressive</h3>
                         <div class="score">${scores.passiveAggressive}</div>
                         <div class="max">of ${maxScore}</div>
+                    </div>
+                </div>
+                
+                <!-- TRACKER SUMMARY SECTION -->
+                <div style="background: linear-gradient(135deg, #1a3a7a 0%, #00205B 100%); color: white; padding: 25px; border-radius: 14px; margin: 20px 0;">
+                    <h3 style="color: #C4A000; margin-bottom: 15px; font-size: 1.3em;">📋 Assessment Tracker Summary</h3>
+                    <p style="font-size: 0.9em; opacity: 0.9; margin-bottom: 15px;">Copy this information into your Assessment Tracker at the end of the semester.</p>
+                    
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Primary Style</div>
+                                <div style="font-size: 1.4em; font-weight: 700; color: ${primary.isIdeal ? '#4CAF50' : '#F5E6A3'};">${primary.name} ${primary.isIdeal ? '✓' : ''}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Secondary Style</div>
+                                <div style="font-size: 1.4em; font-weight: 700; color: #F5E6A3;">${secondary.name}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Style Clarity</div>
+                                <div style="font-size: 1.2em; font-weight: 600;">${styleClarity} (${primaryPct}%)</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Communication Pattern</div>
+                                <div style="font-size: 1.2em; font-weight: 600;">${directnessOrientation} & ${respectOrientation}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Score Distribution</div>
+                        <div style="font-family: monospace; font-size: 1em;">
+                            Assertive: ${scores.assertive}/50 (${Math.round(scores.assertive/50*100)}%) | Aggressive: ${scores.aggressive}/50 | Passive: ${scores.passive}/50 | P-A: ${scores.passiveAggressive}/50
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(196, 160, 0, 0.2); padding: 15px; border-radius: 8px; border-left: 4px solid #C4A000;">
+                        <div style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Key Characteristics for SWOT Analysis</div>
+                        <div style="font-size: 0.95em; line-height: 1.6;">
+                            <strong>Profile:</strong> ${primary.profileSummary}<br>
+                            <strong>Approach:</strong> ${primary.communicationApproach}<br>
+                            <strong>Workplace Impact:</strong> ${primary.workplaceImpact}
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; font-family: monospace; font-size: 0.85em;">
+                        <span style="opacity: 0.7;">Tracker Code:</span> <strong style="color: #F5E6A3;">${trackerCode}</strong> 
+                        <span style="opacity: 0.7; margin-left: 15px;">|</span>
+                        <span style="opacity: 0.7; margin-left: 15px;">Raw:</span> <strong>As${scores.assertive}-Ag${scores.aggressive}-Pa${scores.passive}-PA${scores.passiveAggressive}</strong>
                     </div>
                 </div>
 
@@ -1101,6 +1197,23 @@
                             </div>
                         </div>
                         <p class="type-description">${primary.description}</p>
+                        
+                        <!-- Enhanced Profile Section -->
+                        <div style="background: linear-gradient(135deg, #fffef8 0%, #fef9e7 100%); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #C4A000;">
+                            <h5 style="color: var(--chapman-blue); margin-bottom: 12px;">📋 Your Communication Profile</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 15px; line-height: 1.7;">${primary.profileSummary}</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="padding: 12px; background: rgba(0,32,91,0.05); border-radius: 8px;">
+                                    <strong style="color: var(--chapman-blue); font-size: 0.85em; text-transform: uppercase;">Communication Approach</strong>
+                                    <p style="margin-top: 5px; font-size: 0.9em; color: var(--text-secondary);">${primary.communicationApproach}</p>
+                                </div>
+                                <div style="padding: 12px; background: rgba(0,32,91,0.05); border-radius: 8px;">
+                                    <strong style="color: var(--chapman-blue); font-size: 0.85em; text-transform: uppercase;">Workplace Impact</strong>
+                                    <p style="margin-top: 5px; font-size: 0.9em; color: var(--text-secondary);">${primary.workplaceImpact}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="char-tags">
                             ${primary.characteristics.map(c => `<span class="char-tag ${primaryStyle === 'passiveAggressive' ? 'passive-aggressive' : primaryStyle}">${c}</span>`).join('')}
                         </div>
@@ -1214,6 +1327,30 @@
                                     </div>
                                 `;
                             }).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- SWOT Preview Section -->
+                    <div style="background: linear-gradient(135deg, var(--blue-light) 0%, #f0f4fa 100%); border-radius: 14px; padding: 25px; margin: 20px 0; border: 2px solid var(--chapman-blue);">
+                        <h4 style="color: var(--chapman-blue); margin-bottom: 15px; font-size: 1.2em;">📊 SWOT Analysis Preview (For Assessment Tracker)</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 15px;">This preview shows how your Communication Style will contribute to your comprehensive SWOT analysis.</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="background: #E8F5E9; padding: 15px; border-radius: 10px; border-left: 4px solid #2E7D32;">
+                                <strong style="color: #2E7D32; font-size: 0.9em;">STRENGTH</strong>
+                                <p style="font-size: 0.9em; margin-top: 5px; color: var(--text-secondary);">${primary.swotStrength}</p>
+                            </div>
+                            <div style="background: #FFEBEE; padding: 15px; border-radius: 10px; border-left: 4px solid #C62828;">
+                                <strong style="color: #C62828; font-size: 0.9em;">WEAKNESS</strong>
+                                <p style="font-size: 0.9em; margin-top: 5px; color: var(--text-secondary);">${primary.swotWeakness}</p>
+                            </div>
+                            <div style="background: #E3F2FD; padding: 15px; border-radius: 10px; border-left: 4px solid #1565C0;">
+                                <strong style="color: #1565C0; font-size: 0.9em;">OPPORTUNITY</strong>
+                                <p style="font-size: 0.9em; margin-top: 5px; color: var(--text-secondary);">${primary.swotOpportunity}</p>
+                            </div>
+                            <div style="background: #FFF3E0; padding: 15px; border-radius: 10px; border-left: 4px solid #E65100;">
+                                <strong style="color: #E65100; font-size: 0.9em;">THREAT</strong>
+                                <p style="font-size: 0.9em; margin-top: 5px; color: var(--text-secondary);">${primary.swotThreat}</p>
+                            </div>
                         </div>
                     </div>
 
