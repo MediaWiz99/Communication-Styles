@@ -1384,132 +1384,340 @@
             const secondary = styleData[secondaryStyle];
             const maxScore = 50;
 
+            // Colors
             const chapmanBlue = [0, 32, 91];
             const chapmanGold = [196, 160, 0];
             const textDark = [26, 26, 46];
             const textMuted = [100, 100, 110];
+            const greenColor = [46, 125, 50];
+            const redColor = [198, 40, 40];
+            const blueColor = [21, 101, 192];
+            const orangeColor = [230, 81, 0];
+            const purpleColor = [94, 53, 177];
 
-            // Header
-            doc.setFillColor(...chapmanBlue);
-            doc.rect(0, 0, 210, 45, 'F');
+            // Calculate tracker metrics
+            const totalScore = scores.assertive + scores.aggressive + scores.passive + scores.passiveAggressive;
+            const primaryPct = Math.round((scores[primaryStyle] / totalScore) * 100);
+            const styleClarity = primaryPct >= 35 ? 'Strong' : primaryPct >= 28 ? 'Moderate' : 'Balanced';
+            const directScore = scores.assertive + scores.aggressive;
+            const indirectScore = scores.passive + scores.passiveAggressive;
+            const directness = directScore > indirectScore ? 'Direct' : 'Indirect';
+            const respectScore = scores.assertive + scores.passive;
+            const challengeScore = scores.aggressive + scores.passiveAggressive;
+            const respect = respectScore > challengeScore ? 'Respectful' : 'Challenging';
+            const styleAbbrev = { assertive: 'As', aggressive: 'Ag', passive: 'Pa', passiveAggressive: 'PA' };
+            const trackerCode = 'CSA-' + styleAbbrev[primaryStyle] + styleAbbrev[secondaryStyle] + '-' + styleClarity.charAt(0);
+            const assertivePct = Math.round((scores.assertive / 50) * 100);
+
+            // Helper function
+            function addWrappedText(text, x, startY, maxWidth, lineHeight) {
+                const lines = doc.splitTextToSize(text, maxWidth);
+                let currentY = startY;
+                lines.forEach(function(line) {
+                    if (currentY > 275) { doc.addPage(); currentY = 20; }
+                    doc.text(line, x, currentY);
+                    currentY += lineHeight;
+                });
+                return currentY;
+            }
+
+            // ===== PAGE 1: Header and Primary Style Overview =====
+            doc.setFillColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.rect(0, 0, 210, 42, 'F');
             doc.setFontSize(10);
             doc.setTextColor(255, 255, 255);
             doc.text('CHAPMAN UNIVERSITY', 105, 12, { align: 'center' });
             doc.setFontSize(9);
-            doc.setTextColor(...chapmanGold);
+            doc.setTextColor(chapmanGold[0], chapmanGold[1], chapmanGold[2]);
             doc.text('Argyros College of Business and Economics', 105, 18, { align: 'center' });
-            doc.setFontSize(18);
+            doc.setFontSize(16);
             doc.setTextColor(255, 255, 255);
-            doc.text('Communication Style Assessment', 105, 30, { align: 'center' });
-            doc.setFontSize(10);
-            doc.text('Official Results Report', 105, 38, { align: 'center' });
-            doc.setFillColor(...chapmanGold);
-            doc.rect(0, 45, 210, 2, 'F');
+            doc.text('Communication Style Assessment', 105, 28, { align: 'center' });
+            doc.setFontSize(9);
+            doc.text('Official Results Report', 105, 36, { align: 'center' });
+            doc.setFillColor(chapmanGold[0], chapmanGold[1], chapmanGold[2]);
+            doc.rect(0, 42, 210, 2, 'F');
 
-            let y = 55;
-            doc.setFontSize(11);
-            doc.setTextColor(...textDark);
-            doc.text(`Student: ${studentName}`, 20, y);
-            doc.text(`Date: ${new Date(surveyDate).toLocaleDateString()}`, 120, y);
+            let y = 52;
+
+            // Student Info
+            doc.setFontSize(10);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            doc.text('Student: ' + studentName, 20, y);
+            doc.text('Date: ' + new Date(surveyDate).toLocaleDateString(), 140, y);
             y += 10;
 
-            // Scores
-            doc.setFontSize(9);
-            doc.setTextColor(...textMuted);
-            doc.text(`Scores: Assertive: ${scores.assertive} | Aggressive: ${scores.aggressive} | Passive: ${scores.passive} | Passive-Aggressive: ${scores.passiveAggressive}`, 20, y);
-            y += 12;
-
-            // Primary Style
-            doc.setFillColor(...chapmanBlue);
-            doc.roundedRect(20, y, 170, 15, 3, 3, 'F');
-            doc.setFontSize(12);
+            // Primary Style Banner
+            doc.setFillColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.roundedRect(20, y, 170, 16, 2, 2, 'F');
+            doc.setFontSize(13);
             doc.setTextColor(255, 255, 255);
-            doc.text(`PRIMARY: ${primary.name.toUpperCase()} ${primary.icon}`, 105, y + 10, { align: 'center' });
+            const idealLabel = primary.isIdeal ? ' (IDEAL STYLE)' : '';
+            doc.text('PRIMARY STYLE: ' + primary.name.toUpperCase() + idealLabel, 105, y + 11, { align: 'center' });
             y += 22;
 
-            doc.setFontSize(11);
-            doc.setTextColor(...chapmanGold);
-            doc.text(`${primary.subtitle}`, 105, y, { align: 'center' });
-            y += 8;
-
             doc.setFontSize(10);
-            doc.setTextColor(...textMuted);
-            doc.text(`Secondary: ${secondary.name}`, 105, y, { align: 'center' });
-            y += 12;
-
-            // Description
+            doc.setTextColor(chapmanGold[0], chapmanGold[1], chapmanGold[2]);
+            doc.text(primary.subtitle, 105, y, { align: 'center' });
+            y += 6;
             doc.setFontSize(9);
-            doc.setTextColor(...textDark);
-            const descLines = doc.splitTextToSize(primary.description, 170);
-            descLines.forEach(line => { doc.text(line, 20, y); y += 5; });
-            y += 8;
-
-            // Impact
-            if (primary.impact.negative.length > 0) {
-                doc.setFontSize(11);
-                doc.setTextColor(...chapmanBlue);
-                doc.text('Impact of This Style', 20, y);
-                y += 7;
-                doc.setFontSize(9);
-                doc.setTextColor(...textDark);
-                primary.impact.negative.slice(0, 4).forEach(n => {
-                    if (y > 270) { doc.addPage(); y = 20; }
-                    const lines = doc.splitTextToSize(`• ${n}`, 165);
-                    lines.forEach(line => { doc.text(line, 25, y); y += 5; });
-                });
-                y += 8;
-            }
-
-            // Tips
-            if (y > 200) { doc.addPage(); y = 20; }
-            doc.setFontSize(11);
-            doc.setTextColor(...chapmanBlue);
-            doc.text('Development Tips', 20, y);
-            y += 7;
-            doc.setFontSize(9);
-            doc.setTextColor(...textDark);
-            primary.tips.forEach(t => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(`• ${t}`, 165);
-                lines.forEach(line => { doc.text(line, 25, y); y += 5; });
-            });
+            doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+            doc.text('Secondary Style: ' + secondary.name, 105, y, { align: 'center' });
             y += 10;
 
-            // Reflection
-            if (y > 200) { doc.addPage(); y = 20; }
-            doc.setFillColor(...chapmanBlue);
+            // Score Distribution Box
+            doc.setFillColor(245, 247, 250);
+            doc.roundedRect(20, y, 170, 32, 2, 2, 'F');
+            doc.setFontSize(9);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('SCORE DISTRIBUTION', 25, y + 7);
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            doc.text('Assertive: ' + scores.assertive + '/50 (' + assertivePct + '%)', 25, y + 15);
+            doc.text('Aggressive: ' + scores.aggressive + '/50', 90, y + 15);
+            doc.text('Passive: ' + scores.passive + '/50', 25, y + 23);
+            doc.text('Passive-Aggressive: ' + scores.passiveAggressive + '/50', 90, y + 23);
+            doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+            doc.text('Pattern: ' + directness + ' & ' + respect, 155, y + 15);
+            doc.text('Clarity: ' + styleClarity, 155, y + 23);
+            y += 38;
+
+            // Tracker Code Box
+            doc.setFillColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.roundedRect(20, y, 170, 10, 2, 2, 'F');
+            doc.setFontSize(8);
+            doc.setTextColor(255, 255, 255);
+            doc.text('Tracker: ' + trackerCode + '  |  Raw: As' + scores.assertive + '-Ag' + scores.aggressive + '-Pa' + scores.passive + '-PA' + scores.passiveAggressive + '  |  Assertive Score: ' + assertivePct + '%', 105, y + 7, { align: 'center' });
+            y += 16;
+
+            // Profile Summary
+            doc.setFontSize(10);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('YOUR COMMUNICATION PROFILE', 20, y);
+            y += 6;
+            doc.setFontSize(9);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            y = addWrappedText(primary.profileSummary, 20, y, 170, 4.5);
+            y += 4;
+
+            // Communication Approach
+            doc.setFontSize(10);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('Communication Approach', 20, y);
+            y += 5;
+            doc.setFontSize(9);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            y = addWrappedText(primary.communicationApproach, 20, y, 170, 4.5);
+            y += 4;
+
+            // Workplace Impact
+            doc.setFontSize(10);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('Workplace Impact', 20, y);
+            y += 5;
+            doc.setFontSize(9);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            y = addWrappedText(primary.workplaceImpact, 20, y, 170, 4.5);
+            y += 4;
+
+            // Characteristics
+            doc.setFontSize(10);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('Key Characteristics', 20, y);
+            y += 5;
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            doc.text(primary.characteristics.join(' - '), 20, y);
+            y += 8;
+
+            // Impact Section
+            if (primary.impact.negative && primary.impact.negative.length > 0) {
+                doc.setFontSize(10);
+                doc.setTextColor(redColor[0], redColor[1], redColor[2]);
+                doc.text('Negative Impact', 20, y);
+                y += 5;
+                doc.setFontSize(8);
+                doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+                primary.impact.negative.forEach(function(n) {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text('- ' + n, 25, y);
+                    y += 4.5;
+                });
+                y += 4;
+            } else if (primary.impact.positive && primary.impact.positive.length > 0) {
+                doc.setFontSize(10);
+                doc.setTextColor(greenColor[0], greenColor[1], greenColor[2]);
+                doc.text('Positive Impact', 20, y);
+                y += 5;
+                doc.setFontSize(8);
+                doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+                primary.impact.positive.forEach(function(p) {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text('- ' + p, 25, y);
+                    y += 4.5;
+                });
+                y += 4;
+            }
+
+            // Development Tips
+            doc.setFontSize(10);
+            doc.setTextColor(blueColor[0], blueColor[1], blueColor[2]);
+            doc.text('Development Tips', 20, y);
+            y += 5;
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            primary.tips.forEach(function(t) {
+                if (y > 275) { doc.addPage(); y = 20; }
+                doc.text('- ' + t, 25, y);
+                y += 4.5;
+            });
+
+            // ===== PAGE 2: SWOT Analysis and Comparison =====
+            doc.addPage();
+            y = 20;
+
+            // SWOT Header
+            doc.setFillColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.roundedRect(20, y, 170, 10, 2, 2, 'F');
+            doc.setFontSize(11);
+            doc.setTextColor(255, 255, 255);
+            doc.text('SWOT ANALYSIS - ' + primary.name + ' Communication', 105, y + 7, { align: 'center' });
+            y += 18;
+
+            // SWOT Grid
+            const boxW = 82;
+            const boxH = 32;
+
+            // Strength Box
+            doc.setFillColor(232, 245, 233);
+            doc.roundedRect(20, y, boxW, boxH, 2, 2, 'F');
+            doc.setDrawColor(greenColor[0], greenColor[1], greenColor[2]);
+            doc.setLineWidth(0.5);
+            doc.line(20, y, 20, y + boxH);
+            doc.setFontSize(9);
+            doc.setTextColor(greenColor[0], greenColor[1], greenColor[2]);
+            doc.text('STRENGTH', 25, y + 7);
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            const sLines = doc.splitTextToSize(primary.swotStrength, boxW - 10);
+            sLines.forEach(function(line, i) { if (i < 4) doc.text(line, 25, y + 13 + (i * 4)); });
+
+            // Weakness Box
+            doc.setFillColor(255, 235, 238);
+            doc.roundedRect(108, y, boxW, boxH, 2, 2, 'F');
+            doc.setDrawColor(redColor[0], redColor[1], redColor[2]);
+            doc.line(108, y, 108, y + boxH);
+            doc.setFontSize(9);
+            doc.setTextColor(redColor[0], redColor[1], redColor[2]);
+            doc.text('WEAKNESS', 113, y + 7);
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            const wLines = doc.splitTextToSize(primary.swotWeakness, boxW - 10);
+            wLines.forEach(function(line, i) { if (i < 4) doc.text(line, 113, y + 13 + (i * 4)); });
+
+            y += boxH + 5;
+
+            // Opportunity Box
+            doc.setFillColor(227, 242, 253);
+            doc.roundedRect(20, y, boxW, boxH, 2, 2, 'F');
+            doc.setDrawColor(blueColor[0], blueColor[1], blueColor[2]);
+            doc.line(20, y, 20, y + boxH);
+            doc.setFontSize(9);
+            doc.setTextColor(blueColor[0], blueColor[1], blueColor[2]);
+            doc.text('OPPORTUNITY', 25, y + 7);
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            const oLines = doc.splitTextToSize(primary.swotOpportunity, boxW - 10);
+            oLines.forEach(function(line, i) { if (i < 4) doc.text(line, 25, y + 13 + (i * 4)); });
+
+            // Threat Box
+            doc.setFillColor(255, 243, 224);
+            doc.roundedRect(108, y, boxW, boxH, 2, 2, 'F');
+            doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
+            doc.line(108, y, 108, y + boxH);
+            doc.setFontSize(9);
+            doc.setTextColor(orangeColor[0], orangeColor[1], orangeColor[2]);
+            doc.text('THREAT', 113, y + 7);
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            const tLines = doc.splitTextToSize(primary.swotThreat, boxW - 10);
+            tLines.forEach(function(line, i) { if (i < 4) doc.text(line, 113, y + 13 + (i * 4)); });
+
+            y += boxH + 15;
+
+            // Communication Style Comparison
+            doc.setFontSize(11);
+            doc.setTextColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
+            doc.text('COMMUNICATION STYLE COMPARISON', 20, y);
+            y += 8;
+
+            const styleComp = [
+                { name: 'Assertive', color: greenColor, msg: 'My needs matter AND so do yours', result: 'Respected, clear communication' },
+                { name: 'Aggressive', color: redColor, msg: 'My needs matter, yours do not', result: 'Feared, resented, avoided' },
+                { name: 'Passive', color: purpleColor, msg: 'Your needs matter, mine do not', result: 'Overlooked, taken advantage of' },
+                { name: 'Passive-Aggressive', color: orangeColor, msg: 'I will get you back indirectly', result: 'Confused, distrusted' }
+            ];
+
+            doc.setFontSize(8);
+            styleComp.forEach(function(s) {
+                doc.setTextColor(s.color[0], s.color[1], s.color[2]);
+                doc.text(s.name, 25, y);
+                doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+                doc.text('"' + s.msg + '"', 60, y);
+                doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+                doc.text(s.result, 145, y);
+                y += 7;
+            });
+            y += 8;
+
+            // Assertive Goal Box (if not already assertive)
+            if (primaryStyle !== 'assertive') {
+                doc.setFillColor(232, 245, 233);
+                doc.roundedRect(20, y, 170, 22, 2, 2, 'F');
+                doc.setFontSize(9);
+                doc.setTextColor(greenColor[0], greenColor[1], greenColor[2]);
+                doc.text('GOAL: Develop Assertive Communication', 25, y + 8);
+                doc.setFontSize(8);
+                doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+                doc.text('Your Assertive Score: ' + scores.assertive + '/50 (' + assertivePct + '%) - Room to grow toward the ideal style.', 25, y + 16);
+                y += 30;
+            }
+
+            // Reflection Questions
+            doc.setFillColor(chapmanBlue[0], chapmanBlue[1], chapmanBlue[2]);
             doc.roundedRect(20, y, 170, 10, 2, 2, 'F');
             doc.setFontSize(10);
             doc.setTextColor(255, 255, 255);
             doc.text('REFLECTION QUESTIONS', 105, y + 7, { align: 'center' });
-            y += 18;
+            y += 16;
 
             const reflectionQs = [
-                'Think of a difficult conversation. Which style did you use? How did it affect the outcome?',
-                'In what situations do you shift to a less effective communication style?',
-                'What specific assertive phrase could you practice in your next challenging conversation?',
-                'What triggers cause you to communicate less effectively?'
+                'Think of a recent difficult conversation. Which communication style did you use? How did it affect the outcome?',
+                'In what situations do you tend to shift from your primary style to a less effective one?',
+                'How might your communication style be perceived by your team members or colleagues?',
+                'What specific assertive phrase could you practice using in your next challenging conversation?',
+                'What triggers cause you to communicate less effectively? How can you prepare for those situations?'
             ];
-            doc.setFontSize(9);
-            doc.setTextColor(...textDark);
-            reflectionQs.forEach((q, i) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(`${i + 1}. ${q}`, 165);
-                lines.forEach(line => { doc.text(line, 25, y); y += 5; });
-                y += 4;
+            doc.setFontSize(8);
+            doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+            reflectionQs.forEach(function(q, i) {
+                if (y > 275) { doc.addPage(); y = 20; }
+                const qLines = doc.splitTextToSize((i + 1) + '. ' + q, 165);
+                qLines.forEach(function(line) { doc.text(line, 25, y); y += 4; });
+                y += 3;
             });
 
-            // Footer
+            // Footer on all pages
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 doc.setFontSize(8);
-                doc.setTextColor(...textMuted);
-                doc.text(`Page ${i} of ${pageCount}`, 105, 287, { align: 'center' });
-                doc.text('Chapman University • Argyros College of Business and Economics • MGMT 316', 105, 292, { align: 'center' });
+                doc.setTextColor(textMuted[0], textMuted[1], textMuted[2]);
+                doc.text('Page ' + i + ' of ' + pageCount, 105, 287, { align: 'center' });
+                doc.text('Chapman University - Argyros College of Business and Economics - MGMT 316', 105, 292, { align: 'center' });
             }
 
-            doc.save(`Communication_Style_Assessment_${studentName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save('Communication_Style_Assessment_' + studentName.replace(/\s+/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.pdf');
         }
 
         function restartAssessment() {
